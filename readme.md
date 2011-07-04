@@ -30,7 +30,7 @@ Also:
 
 ### Turn your Date object in a string in the format you want!
 
-How do you write January 18th 2011? Some countries do it as 01/18/2011, others as 18/11/2011. SQL expects 2011-18-01. It's a mess!
+How do you write January 18th 2011? Some countries do it as 01/18/2011, others as 18/01/2011. SQL expects 2011-18-01. It's a mess!
 
 Super Date has a method to allow you to decide how you want to convert your Date to string.
 
