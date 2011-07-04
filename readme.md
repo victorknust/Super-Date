@@ -42,6 +42,7 @@ Anything that is not a special character will stay as is.
 
 Example:
 
+    date = new Date('2011-05-21');
     date.format('The current year is: %Y');
 
 It returns:
@@ -84,15 +85,15 @@ Symbols related to date begins with %, symbols related to the time begins with $
 
 Inside Super Date I used .format() to create some pre-defined formats. Let's see them.
 
-**.timeString(showSeconds)** 
+    date.timeString(showSeconds)
 
 Returns only the time of the your Date object as a string like "11:48". If show seconds is true, it shows the seconds as well.
 
-**.toInternationalDate()**
+    date.toInternationalDate()
 
 This is the date format used in some systems. This format returns a string like year-month-day. _Example: 2011-05-27_.
 
-**.toInternationalDateTime()**
+    date.toInternationalDateTime()
 
 Like the above, but it includes hours, minutes and seconds. This is perfect to use with a database.
 
