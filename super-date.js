@@ -1,3 +1,9 @@
+/**************
+Super Date created by Leonardo Bighi.
+
+
+***************/
+
 (
 	function() {
 		var _checkDate = function(date) {
