@@ -123,9 +123,15 @@ Date.prototype.toInternationalDateTime = function() {
 	return this.format('%Y-%M-%D $H:$M:$S');
 };
 
-Date.prototype.distanceFromTimeInWords = function(anotherDate) {
+// Returns a string describing the distance of time between the date from another date object
+Date.prototype.distanceOfTimeInWords = function(anotherDate) {
 	_checkDate(anotherDate);
 	return inWords(this - anotherDate);
+};
+
+// Returns a string describing the distance between now and your Date object
+Date.prototype.distanceOfTimeInWordsFromNow = function() {
+	return inWords(new Date() - this);
 };
 
 var inWords = function(distanceMillis) {
