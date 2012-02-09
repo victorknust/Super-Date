@@ -1,7 +1,9 @@
 /**************
 Super Date created by Leonardo Bighi.
 
+Feel free to copy, edit and redistribute Super Date as you wish, as long as you credit me.
 
+The _inWord() function is a work of Ryan McGeary, from the timeago jQuery plugin.
 ***************/
 
 (
