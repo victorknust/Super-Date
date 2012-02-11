@@ -3,12 +3,11 @@ Super Date created by Leonardo Bighi.
 
 Feel free to copy, edit and redistribute Super Date as you wish, as long as you credit me.
 
-The _inWord() function is a work of Ryan McGeary, from the timeago jQuery plugin.
+The _timeDifferenceInWords() function is a work of Ryan McGeary, from the timeago jQuery plugin.
 ***************/
 
-(
-	function() {
-		var _checkDate = function(date) {
+(function() {
+	var _checkDate = function(date) {
 		if (date.constructor != Date) {
 			throw "This is not a date";
 		}
@@ -45,7 +44,15 @@ The _inWord() function is a work of Ryan McGeary, from the timeago jQuery plugin
 		return seconds;
 	};
 
-	Date.prototype.compare = function(dateFormat, anotherDate) {
+	Date.prototype.getDayName = function() {
+		return this.format('#D');
+	};
+
+	Date.prototype.getMonthName = function() {
+		return this.format('#M');
+	};
+
+	Date.prototype.compare = function(anotherDate, dateFormat) {
 		_checkDate(anotherDate);
 		return (this.format(dateFormat) == anotherDate.format(dateFormat));
 	}
@@ -62,27 +69,56 @@ The _inWord() function is a work of Ryan McGeary, from the timeago jQuery plugin
 
 	Date.prototype.sameDayAs = function(anotherDate) {
 		_checkDate(anotherDate);
-		return this.compare("%D", anotherDate);
+		return this.compare(anotherDate, "%D");
 	};
 
 	Date.prototype.sameMonthAs = function(anotherDate) {
 		_checkDate(anotherDate);
-		return this.compare("%M", anotherDate);
+		return this.compare(anotherDate, "%M");
 	}
 
 	Date.prototype.sameYearAs = function(anotherDate) {
 		_checkDate(anotherDate);
-		return this.compare("%Y", anotherDate);
+		return this.compare(anotherDate, "%Y");
 	}
+
+	Date.prototype.sameYearAndMonthAs = function(anotherDate) {
+		_checkDate(anotherDate);
+		return this.compare(anotherDate, "%Y-%M");
+	};
+
+	Date.prototype.isToday = function() {
+		return this.sameDayAs(new Date());
+	};
+
+	Date.prototype.isYesterday = function() {
+		var today = new Date();
+		if (this.sameYearAndMonthAs(today)) {
+			if (this.getDate() == today.getDate() -1) {
+				return true;
+			}
+		}
+		return false;
+	};
+
+	Date.prototype.isTomorrow = function() {
+		var today = new Date();
+		if (this.sameYearAndMonthAs(today)) {
+			if (this.getDate() == today.getDate() +1) {
+				return true;
+			}
+		}
+		return false;
+	};
 
 	/* Special pattern symbols:
 		Symbols related to date begins with %, symbols related to the time begins with $
 		%D - full day (always 2 digits)
-		%d - day
+		%d - day (1 or 2 digits)
 		%M - full month (always 2 digits)
-		%m - month
+		%m - month (1 or 2 digits)
 		%Y - full year (4 digits)
-		%y - year (2 digits)
+		%y - short year (2 digits)
 		$H - Hours in 24-hours format
 		$h - Hours in 12-hours format
 		$P - shows either AM or PM (uppercase)
@@ -91,6 +127,10 @@ The _inWord() function is a work of Ryan McGeary, from the timeago jQuery plugin
 		$m - alias for $M
 		$S - seconds
 		$s - alias for $S
+		#M - name of the month (uppercase first letter)
+		#m - name of the month (lowercase first letter)
+		#D - name of the day (uppercase first letter)
+		#d - name of the day (lowercase first letter)
 	*/
 	Date.prototype.format = function(pattern) {
 		pattern = pattern.replace(/%D/g, this.getFullDate());
@@ -113,65 +153,59 @@ The _inWord() function is a work of Ryan McGeary, from the timeago jQuery plugin
 		pattern = pattern.replace(/\$p/g, ampm.toLowerCase());
 		pattern = pattern.replace(/\$M/gi, this.getFullMinutes());
 		pattern = pattern.replace(/\$S/gi, this.getFullSeconds());
+
+		pattern = pattern.replace(/#M/g, Date.settings.monthNames[this.getMonth()]);
+		pattern = pattern.replace(/#m/g, Date.settings.monthNames[this.getMonth()].toLowerCase());
+		pattern = pattern.replace(/#D/g, Date.settings.dayNames[this.getDay()]);
+		pattern = pattern.replace(/#d/g, Date.settings.dayNames[this.getDay()].toLowerCase());
 		
 		return pattern;
 	};
 
-	Date.prototype.timeString = function(seconds) {
-		if (seconds) {
+	Date.prototype.time = function(show_seconds) {
+		if (show_seconds) {
 			return this.format('$H:$M:$S');
 		} else {
 			return this.format('$H:$M');
 		}
 	};
 
-	Date.prototype.toInternationalDate = function() {
+	Date.prototype.date = function(longer_version) {
+		if (longer_version) {
+			return this.format(Date.settings.dateInNumbersFull);
+		} else {
+			return this.format(Date.settings.dateInNumbersShort);
+		}
+	};
+
+	Date.prototype.internationalDate = function() {
 		return this.format('%Y-%M-%D');
 	};
 
-	Date.prototype.toInternationalDateTime = function() {
+	Date.prototype.internationalDateTime = function() {
 		return this.format('%Y-%M-%D $H:$M:$S');
 	};
 
 	// Returns a string describing the distance of time between the date from another date object
 	Date.prototype.distanceOfTimeInWords = function(anotherDate) {
 		_checkDate(anotherDate);
-		return _inWords(this - anotherDate);
+		return _timeDifferenceInWords(this - anotherDate);
 	};
 
 	// Returns a string describing the distance between now and your Date object
 	Date.prototype.distanceOfTimeInWordsFromNow = function() {
-		return _inWords(new Date() - this);
+		return _timeDifferenceInWords(new Date() - this);
 	};
 
-	var _inWords = function(distanceMillis) {
-		var settings = {
-	      refreshMillis: 60000,
-	      allowFuture: false,
-	      strings: {
-	        prefixAgo: null,
-	        prefixFromNow: null,
-	        suffixAgo: "ago",
-	        suffixFromNow: "from now",
-	        seconds: "less than a minute",
-	        minute: "about a minute",
-	        minutes: "%d minutes",
-	        hour: "about an hour",
-	        hours: "about %d hours",
-	        day: "a day",
-	        days: "%d days",
-	        month: "about a month",
-	        months: "%d months",
-	        year: "about a year",
-	        years: "%d years",
-	        numbers: []
-	      }
-	    };
+	Date.prototype.inWords = function() {
+		return this.format(Date.settings.dateInWords);
+	};
 
-		var $l = settings.strings;
+	var _timeDifferenceInWords = function(distanceMillis) {
+		var $l = Date.settings.timeDifference.strings;
 		var prefix = $l.prefixAgo;
 		var suffix = $l.suffixAgo;
-		if (settings.allowFuture) {
+		if (Date.settings.timeDifference.allowFuture) {
 			if (distanceMillis < 0) {
 				prefix = $l.prefixFromNow;
 				suffix = $l.suffixFromNow;
@@ -203,5 +237,67 @@ The _inWord() function is a work of Ryan McGeary, from the timeago jQuery plugin
 		substitute($l.years, Math.floor(years));
 
 		return $.trim([prefix, words, suffix].join(" "));
+	}
+
+
+
+	/*** BASE SETTINGS ***/
+	if (Date.settings == undefined) {
+		Date.settings = {
+			dayNames: [
+				"Sunday",
+				"Monday",
+				"Tuesday",
+				"Wednesday",
+				"Thursday",
+				"Friday",
+				"Saturday"
+			],
+			monthNames: [
+				"January",
+				"February",
+				"March",
+				"April",
+				"May",
+				"June",
+				"July",
+				"August",
+				"September",
+				"October",
+				"November",
+				"December"
+			], 
+			dateInWords: "#M %d, %Y",
+			dateInNumbersShort: "%m/%d/%Y",
+			dateInNumbersFull: "%M/%D/%Y",
+			timeDifference: {
+				allowFuture: true,
+				strings: {
+					prefixAgo: null,
+					prefixFromNow: null,
+					suffixAgo: "ago",
+					suffixFromNow: "from now",
+					seconds: "less than a minute",
+					minute: "about a minute",
+					minutes: "%d minutes",
+					hour: "about an hour",
+					hours: "about %d hours",
+					day: "a day",
+					days: "%d days",
+					month: "about a month",
+					months: "%d months",
+					year: "about a year",
+					years: "%d years",
+					numbers: []
+				}
+			},
+			extend: function(options) {
+				for (setting in this) {
+					if (options[setting] != this[setting] && options[setting] != undefined) {
+						this[setting] = options[setting];
+					}
+				}
+			}
+		};
 	}
 })();
