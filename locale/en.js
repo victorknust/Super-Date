@@ -8,6 +8,15 @@ Date.settings.extend({
         "Friday",
         "Saturday"
     ],
+    shortDayNames: [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday"
+    ],
     monthNames: [
         "January",
         "February",
@@ -21,6 +30,20 @@ Date.settings.extend({
         "October",
         "November",
         "December"
+    ],
+    shortMonthNames: [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec"
     ], 
     dateInWords: "#M %d, %Y", //Example: February 11, 2012
     dateInNumbersShort: "%m/%d/%Y", //Example: 1/5/2012

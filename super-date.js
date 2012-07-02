@@ -14,34 +14,61 @@ The _timeDifferenceInWords() function is a work of Ryan McGeary, from the timeag
 		return true;
 	}
 
-	Date.prototype.getFullDate = function() {
+	Date.prototype.getFullDate = function(padding) {
+		padding = padding || "0";
 		var bighi_date = this.getDate();
-		if (bighi_date < 10) { bighi_date = "0" + bighi_date; }
+		if (bighi_date < 10) { bighi_date = padding + bighi_date; }
 		return "" + bighi_date;
 	};
 
-	Date.prototype.getFullMonth = function() {
+	Date.prototype.getFullMonth = function(padding) {
+		padding = padding || "0";
 		var bighi_month = this.getMonth() +1;
-		if (bighi_month < 10) { bighi_month = "0" + bighi_month; }
+		if (bighi_month < 10) { bighi_month = padding + bighi_month; }
 		return "" + bighi_month;
 	};
 
-	Date.prototype.getFullHours = function() {
+	Date.prototype.getFullHours = function(padding, clock) {
+		padding = padding || "0";
+		clock = clock || "24";
 		var hours = this.getHours();
-		if (hours < 10) { hours = "0" + hours; }
+		if (clock == "12" && hours > 12) {
+			hours -= 12;
+		}
+		if (hours < 10) { hours = padding + hours; }
 		return hours;
 	};
 
-	Date.prototype.getFullMinutes = function() {
+	Date.prototype.getTimeSuffix = function(uppercase) {
+		uppercase = uppercase || false;
+		var suffix = "";
+		if ( this.getFullHours() >= 12 ) {
+			suffix = "pm"
+		} else {
+			suffix = "am";
+		}
+
+		if (uppercase) { return suffix.toUpperCase(); }
+		else { return suffix; }
+	};
+
+	Date.prototype.getFullMinutes = function(padding) {
+		padding = padding || "0";
 		var minutes = this.getMinutes();
-		if (minutes < 10) { minutes = "0" + minutes; }
+		if (minutes < 10) { minutes = padding + minutes; }
 		return minutes;
 	};
 
-	Date.prototype.getFullSeconds = function() {
+	Date.prototype.getFullSeconds = function(padding) {
+		padding = padding || "0";
 		var seconds = this.getSeconds();
-		if (seconds < 10) { seconds = "0" + seconds; }
+		if (seconds < 10) { seconds = padding + seconds; }
 		return seconds;
+	};
+
+	Date.prototype.getDayOfYear = function() {
+		var onejan = new Date(this.getFullYear(),0,1);
+		return Math.ceil((this - onejan) / 86400000);	
 	};
 
 	Date.prototype.getDayName = function() {
@@ -111,56 +138,47 @@ The _timeDifferenceInWords() function is a work of Ryan McGeary, from the timeag
 		return false;
 	};
 
-	/* Special pattern symbols:
-		Symbols related to date begins with %, symbols related to the time begins with $
-		%D - full day (always 2 digits)
-		%d - day (1 or 2 digits)
-		%M - full month (always 2 digits)
-		%m - month (1 or 2 digits)
-		%Y - full year (4 digits)
-		%y - short year (2 digits)
-		$H - Hours in 24-hours format
-		$h - Hours in 12-hours format
-		$P - shows either AM or PM (uppercase)
-		$p - shows either am or pm (lowercase)
-		$M - minutes
-		$m - alias for $M
-		$S - seconds
-		$s - alias for $S
-		#M - name of the month (uppercase first letter)
-		#m - name of the month (lowercase first letter)
-		#D - name of the day (uppercase first letter)
-		#d - name of the day (lowercase first letter)
+	/* Special pattern symbols
 	*/
-	Date.prototype.format = function(pattern) {
-		pattern = pattern.replace(/%D/g, this.getFullDate());
-		pattern = pattern.replace(/%d/g, this.getDate());
-		pattern = pattern.replace(/%M/g, this.getFullMonth());
-		pattern = pattern.replace(/%m/g, this.getMonth()+1);
-		pattern = pattern.replace(/%Y/g, this.getFullYear());
-		pattern = pattern.replace(/%y/g, (""+this.getFullYear()).replace(/^[0-9]{2}/, ''));
+	Date.prototype.format = function(date_string) {
+		date_string = date_string.replace(/%d/g, this.getFullDate());
+		date_string = date_string.replace(/%-d/g, this.getDate());
+		date_string = date_string.replace(/%e/g, this.getFullDate(" "));
+		date_string = date_string.replace(/%j/g, this.getDayOfYear());
+		date_string = date_string.replace(/%m/g, this.getFullMonth()); // "07"
+		date_string = date_string.replace(/%-m/g, this.getMonth() +1); // "7" 
+		date_string = date_string.replace(/%_m/g, this.getFullMonth(" ")); // " 7"
+		date_string = date_string.replace(/%Y/g, this.getFullYear()); // "2012"
+		date_string = date_string.replace(/%y/g, this.getFullYear() % 100); // "12"
 		
-		if (this.getFullHours() > 12) {
-			var ampm = "PM";
-			var h = this.getFullHours() - 12;
-		} else {
-			var ampm = "AM";
-			var h = this.getFullHours();
-		}
-		pattern = pattern.replace(/\$H/g, this.getFullHours());
-		pattern = pattern.replace(/\$h/g, h);
-		pattern = pattern.replace(/\$P/g, ampm);
-		pattern = pattern.replace(/\$p/g, ampm.toLowerCase());
-		pattern = pattern.replace(/\$M/gi, this.getFullMinutes());
-		pattern = pattern.replace(/\$S/gi, this.getFullSeconds());
+		date_string = date_string.replace(/\%H/g, this.getFullHours()); // Hour, 24-hour clock, zero-padded. Examples: "08", "17"
+		date_string = date_string.replace(/\%k/g, this.getFullHours(" ")); // Hour, 24-hour clock, blank padded. Example: " 8", "17"
+		date_string = date_string.replace(/\%I/g, this.getFullHours("", "12")); // Hour, 12-hour clock, zero-padded. Example: "04" 
+		date_string = date_string.replace(/\%l/g, this.getFullHours(" ", "12")); // Hour, 12-hour clock, blank padded. Example: " 4"
+		date_string = date_string.replace(/\%P/g, this.getTimeSuffix(true));
+		date_string = date_string.replace(/\%p/g, this.getTimeSuffix());
+		date_string = date_string.replace(/\%M/g, this.getFullMinutes());
+		date_string = date_string.replace(/\%S/g, this.getFullSeconds());
 
-		pattern = pattern.replace(/#M/g, Date.settings.monthNames[this.getMonth()]);
-		pattern = pattern.replace(/#m/g, Date.settings.monthNames[this.getMonth()].toLowerCase());
-		pattern = pattern.replace(/#D/g, Date.settings.dayNames[this.getDay()]);
-		pattern = pattern.replace(/#d/g, Date.settings.dayNames[this.getDay()].toLowerCase());
+		date_string = date_string.replace(/%(B|H)/g, Date.settings.monthNames[this.getMonth()]); // "January"
+		date_string = date_string.replace(new RegExp("%\\^(B|H)", "g"), Date.settings.monthNames[this.getMonth()].toUpperCase()); // "JANUARY"
+		date_string = date_string.replace(/%(b|h)/g, Date.settings.shortMonthNames[this.getMonth()]); // "Jan"
+		date_string = date_string.replace(/%\^(b|h)/g, Date.settings.shortMonthNames[this.getMonth()].toUpperCase()); // "JAN"
 		
-		return pattern;
+		date_string = date_string.replace(/%A/g, Date.settings.dayNames[this.getDay()]);
+		date_string = date_string.replace(/%\^A/g, Date.settings.dayNames[this.getDay()].toUpperCase());
+		date_string = date_string.replace(/%a/g, Date.settings.shortDayNames[this.getDay()]);
+		date_string = date_string.replace(/%\^a/g, Date.settings.shortDayNames[this.getDay()].toUpperCase());
+		date_string = date_string.replace(/%w/g, this.getDay()); 
+		if (this.getDay() == 0) {
+			date_string = date_string.replace(/%u/g, '7'); 
+		} else {
+			date_string = date_string.replace(/%u/g, this.getDay()); 
+		}
+		
+		return date_string;
 	};
+	Date.prototype.strftime = Date.prototype.format;
 
 	Date.prototype.time = function(show_seconds) {
 		if (show_seconds) {
@@ -239,6 +257,19 @@ The _timeDifferenceInWords() function is a work of Ryan McGeary, from the timeag
 		return $.trim([prefix, words, suffix].join(" "));
 	}
 
+	// SYNTATHIC SUGAR //
+	Date.prototype.isSunday = function() { return this.getDay() == 0; };
+	Date.prototype.isMonday = function() { return this.getDay() == 1; };
+	Date.prototype.isTuesday = function() { return this.getDay() == 2; };
+	Date.prototype.isWednesday = function() { return this.getDay() == 3; };
+	Date.prototype.isThursday = function() { return this.getDay() == 4; };
+	Date.prototype.isFriday = function() { return this.getDay() == 5; };
+	Date.prototype.isSaturday = function() { return this.getDay() == 6; };
+	
+	Date.prototype.daysToWeekStart = function() { return 7 - this.getDay(); };
+
+	Date.prototype.isFuture = function() { return this > new Date(); };
+	Date.prototype.isPast = function() { return this < new Date(); };
 
 
 	/*** BASE SETTINGS ***/
@@ -253,6 +284,15 @@ The _timeDifferenceInWords() function is a work of Ryan McGeary, from the timeag
 				"Friday",
 				"Saturday"
 			],
+			shortDayNames: [
+				"Sun",
+				"Mon",
+				"Tue",
+				"Wed",
+				"Thu",
+				"Fri",
+				"Sat"
+			],
 			monthNames: [
 				"January",
 				"February",
@@ -266,7 +306,8 @@ The _timeDifferenceInWords() function is a work of Ryan McGeary, from the timeag
 				"October",
 				"November",
 				"December"
-			], 
+			],
+			shortMonthNames: [], 
 			dateInWords: "#M %d, %Y",
 			dateInNumbersShort: "%m/%d/%Y",
 			dateInNumbersFull: "%M/%D/%Y",

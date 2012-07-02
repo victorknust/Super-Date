@@ -1,13 +1,22 @@
 Date.settings.extend({
     dayNames: [
         "Domingo",
-        "Segunda-feira",
-        "Terça-feira",
-        "Quarta-feira",
-        "Quinta-feira",
-        "Sexta-feira",
+        "Segunda",
+        "Terça",
+        "Quarta",
+        "Quinta",
+        "Sexta",
         "Sábado"
     ],
+    shortDayNames: [
+        "Dom",
+        "Seg",
+        "Ter",
+        "Qua",
+        "Qui",
+        "Sex",
+        "Sáb"
+    ], 
     monthNames: [
         "Janeiro",
         "Fevereiro",
@@ -21,6 +30,20 @@ Date.settings.extend({
         "Outubro",
         "Novembro",
         "Dezembro"
+    ], 
+    shortMonthNames: [
+        "Jan",
+        "Fev",
+        "Mar",
+        "Abr",
+        "Mai",
+        "Jun",
+        "Jul",
+        "Ago",
+        "Set",
+        "Out",
+        "Nov",
+        "Dez"
     ], 
     dateInWords: "%d de #m de %Y",
     dateInNumbersShort: "%d/%m/%Y",
